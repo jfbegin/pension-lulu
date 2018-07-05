@@ -44,7 +44,7 @@ classdef GIM_GARCH < handle
             B1 = diag(param(25:28));
 
             Sigma0 = param(17:20)./(ones(4,1)-param(21:24)-param(25:28));
-            LambdaT = [0; 0; 0; 0.003893229/Sigma0(4)-0.5];
+            LambdaT = [0; 0; 0; 0.003893229/Sigma0(4)];
 
         end
 
