@@ -1,7 +1,9 @@
 clear all;
 clc;
 
-paraminit = csvread("..\\Data\\Starting_param.csv");
+%paraminit = csvread("..\\Data\\Starting_param.csv");
+
+paraminit = model.xCenter;
 series    = csvread("..\\Data\\HistData.csv");
 Sigma     = csvread("..\\Data\\Sigma.csv");
 HistMean  = csvread("..\\Data\\HistMean.csv");
@@ -9,8 +11,15 @@ HistMean  = csvread("..\\Data\\HistMean.csv");
 model =  GIM_GARCH_JF(paraminit, series, Sigma, HistMean);
 
 suminfo = model.optimize(paraminit);
-
 sim_result = model.generator(HistMean);
+
+
+suminfo1 = model.optimize(model.xCenter + normrnd(0,0.0000001,28,1));
+
+
+
+real_world_est = [model.xCenter; param29];
+
 
 names = {'Short-Rate','Long-Rate','Inflation','Stock Returns'};
 fig1 = figure('units','pixels','outerposition',[0 0 1000 800]);

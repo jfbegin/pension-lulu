@@ -16,6 +16,8 @@ classdef GIM_GARCH_JF < handle
     Alpha1 = NaN(4,4);
     Beta1  = NaN(4,4);
     
+    xCenter = NaN
+    
     % !!! These should be private, i.e., should not be changed.
     numData = NaN;
     Sigma0  = NaN;
@@ -45,7 +47,7 @@ classdef GIM_GARCH_JF < handle
       Beta1  = diag(param(25:28));
       
       Sigma0 = Omega./(1-Alpha1-Beta1);
-      LambdaT = [0; 0; 0; mean(obj.series(:,4))/Sigma0(4,4) - 0.5];
+      LambdaT = [0; 0; 0; mean(obj.series(:,4))/Sigma0(4,4)];
     end
     
     function obj = update(obj, param)
@@ -113,10 +115,10 @@ classdef GIM_GARCH_JF < handle
     function suminfo = optimize(obj, paraminit)
     % Routine that optimizes the model
       optionsset = optimset('Display','iter','MaxIter',100000, 'MaxFunEvals', 100000);
-      xCenter = fminsearch(@(x) -sum(obj.negLogLLHCenter(x)), paraminit, optionsset);
+      obj.xCenter = fminsearch(@(x) -sum(obj.negLogLLHCenter(x)), paraminit, optionsset);
 
-      [logL,Resi,H] = obj.negLogLLHCenter(xCenter);
-      update(obj, xCenter);
+      [logL,Resi,H] = obj.negLogLLHCenter(obj.xCenter);
+      update(obj, obj.xCenter);
       
       suminfo.Residuals = Resi;
       suminfo.CondVariances = H;
