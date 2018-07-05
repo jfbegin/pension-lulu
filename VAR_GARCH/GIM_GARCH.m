@@ -73,7 +73,7 @@ classdef GIM_GARCH < handle
             if min(param(17:28)) < 10 ^ (-11)
                 %disp("garch positive");
                 %disp(min(param(26:41)));
-                loglikeT = 10;
+                loglikeT = Inf;
                 return
             end
 
@@ -83,7 +83,7 @@ classdef GIM_GARCH < handle
                    %disp("garch stationary");
                    %disp(param(30+i) + param(35+i));
                    %disp(i);
-                   loglikeT = 10;
+                   loglikeT = Inf;
                    return
                end
             end
@@ -101,7 +101,7 @@ classdef GIM_GARCH < handle
             if max(abs(eig(Beta))) >=0.9957
                 %disp("VAR stationary");
                 %disp(max(abs(eig(Beta))));
-                loglikeT = 10;
+                loglikeT = Inf;
                 return
             end
             
