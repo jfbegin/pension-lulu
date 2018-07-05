@@ -39,7 +39,7 @@ csvwrite("xCenter7.csv",paramMlh);
 
 
 %% Ignore this part!
-Different Starting Value Trial
+%Different Starting Value Trial
 
 %loop for trying different starting values
 mlh = 10;

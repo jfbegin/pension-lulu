@@ -60,12 +60,6 @@ classdef GIM_GARCH_JF < handle
     
     function boundedSigmas = boundedSigma(obj, h)
       boundedSigmas = max(eps, min(h, 25.*obj.Sigma0));
-    end    
-      
-    function boundedSigmas = boundedSigmaScen(obj, Sigmas)
-      %[~,N] = size(Sigmas);
-      boundedMatScen = 25.*repmat(diag(obj.Sigma0), 1, 10000);
-      boundedSigmas = max(eps,min(Sigmas, boundedMatScen));
     end
     
     function [logL,Resi,H] = negLogLLHCenter(obj, param)
@@ -125,11 +119,6 @@ classdef GIM_GARCH_JF < handle
     
     function sim_result = generator(obj, startz0)
       %Simulate real-world scenarios
-      
-      sim_result.Zt = NaN(663,4,10000);
-      sim_result.Resi = NaN(662,4,10000);
-      sim_result.Ht = NaN(662,4,10000);
-      
       sim_result.Zt(1,:,:) = repmat(startz0, 1, 10000);
       
       Z1 = startz0;
@@ -140,13 +129,14 @@ classdef GIM_GARCH_JF < handle
 %     LastResT = obj.HistRest(301,:)';
 %     LastSigT = obj.HistHMat(301,:)';
             
-      LastResi = diag(obj.Sigma0).^(1/2);
-      LastHt = diag(obj.Sigma0);
+      LastResi = obj.Sigma0.^(1/2);
+      LastHt = obj.Sigma0;
                      
       Sigmat = diag(obj.Omega) + diag(obj.Alpha1).*(LastResi.^2) + diag(obj.Beta1) .* LastHt;           
       Sigmat = repmat(Sigmat, 1, 10000);
       
-      sim_result.Ht(1,:,:) = repmat(LastHt, 1, 10000);  
+      sim_result.Ht(1,:,:) = repmat(LastHt, 1, 10000);
+  
       sim_result.Zt(2,:,:) = repmat(Z1, 1, 10000); 
       sim_result.Resi(1,:,:) = repmat(LastResi, 1, 10000);
       
