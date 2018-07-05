@@ -8,9 +8,13 @@ HistMean  = csvread("..\\Data\\HistMean.csv");
 
 model =  GIM_GARCH_JF(paraminit, series, Sigma, HistMean);
 
-suminfo = model.optimize(paraminit);
+% suminfo = model.optimize(paraminit);
+load('suminfo');
+model.update(suminfo.xCenter);
 
 sim_result = model.generator(HistMean);
+
+plotM = datetime(2016,6,1) + calmonths(0:660);
 
 names = {'Short-Rate','Long-Rate','Inflation','Stock Returns'};
 fig1 = figure('units','pixels','outerposition',[0 0 1000 800]);
@@ -58,17 +62,15 @@ for di = 1:4
 end
 suptitle('QQ-plots');
 
-plotM = datetime(2016,6,1) + calmonths(0:660);
-
-fig_sim = figure('units','pixels','outerposition',[0 0 1000 800]);
-
+fig6 = figure('units','pixels','outerposition',[0 0 1000 800]);
 for di = 1:4
     var1 = squeeze(sim_result.Zt(:,di,:))';
     prct1 = prctile(var1,[5 25 50 75 95], 1);
-
-    subplot(3,2,di)
+    subplot(2,2,di)
     plot(plotM, prct1(1,2:662), plotM, prct1(2,2:662), plotM, prct1(3,2:662), plotM, prct1(4,2:662), plotM, prct1(5,2:662));
+    title(names{di});
 end
+suptitle('Funnels of Doubt');
 
 
 

@@ -45,7 +45,7 @@ classdef GIM_GARCH_JF < handle
       Beta1  = diag(param(25:28));
       
       Sigma0 = Omega./(1-Alpha1-Beta1);
-      LambdaT = [0; 0; 0; mean(obj.series(:,4))/Sigma0(4,4) - 0.5];
+      LambdaT = [0; 0; 0; mean(obj.series(:,4))/Sigma0(4,4)];
     end
     
     function obj = update(obj, param)
@@ -72,9 +72,9 @@ classdef GIM_GARCH_JF < handle
     % Function for calculating log likelihood
       
       % Update parameters
-      update(obj, param);
+      obj.update(param);
 
-      if max(obj.Alpha1 + obj.Beta1) > 0.99
+      if max(diag(obj.Alpha1 + obj.Beta1)) > 0.98
       	logL = -Inf;
       	return
       end
@@ -85,7 +85,7 @@ classdef GIM_GARCH_JF < handle
       end
       
       % Check stationarity for the VAR model
-      if max(abs(eig(obj.Beta))) > 0.9957
+      if max(abs(eig(obj.Beta))) > 0.980%57
         logL = -Inf;
         return
       end
@@ -112,15 +112,17 @@ classdef GIM_GARCH_JF < handle
     
     function suminfo = optimize(obj, paraminit)
     % Routine that optimizes the model
-      optionsset = optimset('Display','iter','MaxIter',100000, 'MaxFunEvals', 100000);
+      optionsset = optimset('Display','iter','MaxIter',10000, 'MaxFunEvals', 10000);
+      obj.update(paraminit);
       xCenter = fminsearch(@(x) -sum(obj.negLogLLHCenter(x)), paraminit, optionsset);
 
       [logL,Resi,H] = obj.negLogLLHCenter(xCenter);
-      update(obj, xCenter);
+      obj.update(xCenter);
       
       suminfo.Residuals = Resi;
       suminfo.CondVariances = H;
       suminfo.LL = sum(logL);
+      suminfo.xCenter = xCenter
     end
     
     function sim_result = generator(obj, startz0)
