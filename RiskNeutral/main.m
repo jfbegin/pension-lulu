@@ -23,16 +23,16 @@ inovs = RefMat(randn(1204,10000,179,'single')); %for GPU only
 
 %% Routine for Optimization
 RNEstimt = RNEstimation_2(suminfo, HistData, Sigma, HistMean, inovs, HistTStrtData);
-options = optimset('Display','iter','MaxIter', 10000, 'MaxFunEvals', 10000);
+options = optimset('Display','iter','MaxIter', 1000, 'MaxFunEvals', 1000);
 %startX = [-0.0012 0.0009 0.0022 0.0006 -0.0015 0.0001 -0.0008 0.0017 0.0003 0.0001 0.0005 -0.0010];
-startX = lambda;
+startX = x;
 %startX = [-0.0017 0.0002 0.0057 0.0015 -0.0007 -0.0003 -0.0043 0.0055 -0.0001 0.0002 -0.0000 -0.0041];
 %x = fminsearch(@RNEstimt.RNEst, startX, options);
 x = fminsearch(@RNEstimt.RNEstGPU, startX, options);
 startX = x;
 csvwrite("lambdaSrDiv26(1).csv",x);
 x2 = fminsearch(@RNEstimt.RNEstGPU, x, options);
-x3 = fminsearch(@RNEstimt.RNEstGPU, x2, options);
+x3 = fminsearch(@RNEstimt.RNEstGPU, x_test, options);
 x4 = fminsearch(@RNEstimt.RNEstGPU, x3, options);
 
 x5 = fminsearch(@RNEstimt.RNEstGPU, lambda, options);
@@ -48,7 +48,7 @@ Outmat = RNEstimt.termstrt(2, zeros(1,12));
 % find the first fail scenario
 [row, col] = find(isnan(Outmat));
 % total number of fail cases up to the first Inf value
-totalNaN = sum(sum(isnan(Outmat))); 
+  totalNaN = sum(sum(isnan(Outmat))); 
 
 ts = 60; % display information up to this time step
 scnCol = col(1); % pick the fail scenario 

@@ -151,7 +151,9 @@ function yTermLSE = RNEstGPU(obj, lambda)
             end            
             yTermLSE = gather(sum(sum((obj.HistTStrtData - yStruct).^2)));
         end
-                
+        
+        %% End of the main code
+        %% Test Code
         function outMat = test(obj, t, lambda, ts, scn)
             Z0 = obj.HistData.m(t-1,:)';
             Z1 = obj.HistData.m(t,:)';
@@ -318,8 +320,6 @@ function yTermLSE = RNEstGPU(obj, lambda)
         end 
         
 
-        
-        %CPU version
         function yStruct = termstrt(obj, t, lambda)
             Z0 = obj.HistData.m(t-1,:)';
             Z1 = obj.HistData.m(t,:)';
