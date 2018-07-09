@@ -319,7 +319,7 @@ function yTermLSE = RNEstGPU(obj, lambda)
             end
         end 
         
-        %% CPU version of code
+
         function yStruct = termstrt(obj, t, lambda)
             Z0 = obj.HistData.m(t-1,:)';
             Z1 = obj.HistData.m(t,:)';
