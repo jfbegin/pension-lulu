@@ -246,7 +246,8 @@ classdef ALMStudy < handle
             elseif obj.TargetCalAssump.ValRateType == "FixValRate"
                 CurrValRate = obj.TargetCalAssump.FixValRate;
             else
-                CurrValRate = min(max(obj.TargetCalAssump.StockWeight*(exp(obj.z0(2)*12)-1+obj.TargetCalAssump.EquityRP) + obj.TargetCalAssump.BondWeight*(exp(obj.z0(2)*12)-1) + 0.0025, obj.TargetCalAssump.Lbound), obj.TargetCalAssump.Ubound);
+                CurrValRate = min(max(obj.TargetCalAssump.StockWeight*(exp(obj.z0(2)*12)-1+obj.TargetCalAssump.EquityRP) + obj.TargetCalAssump.BondWeight*(exp(obj.z0(2)*12)-1),
+				obj.TargetCalAssump.Lbound), obj.TargetCalAssump.Ubound);
             end
 
             RateIndex = find(obj.rates<=CurrValRate, 1, 'last');
@@ -282,8 +283,8 @@ classdef ALMStudy < handle
                 obj.ValRateMat = ones(obj.ProjYear+1, obj.nscen) .* obj.PlanDesign.FixValRate;
                 obj.InitialValRate = obj.PlanDesign.FixValRate;
             else
-                obj.ValRateMat = (obj.BondYield15+obj.PlanDesign.EquityRP) .* obj.PlanDesign.StockWeight + obj.BondYield15 .* obj.PlanDesign.BondWeight + 0.0025;
-                obj.InitialValRate = (exp(obj.z0(2)*12)-1 + obj.PlanDesign.EquityRP)* obj.PlanDesign.StockWeight +(exp(obj.z0(2)*12)-1)* obj.PlanDesign.BondWeight + 0.0025;
+                obj.ValRateMat = (obj.BondYield15+obj.PlanDesign.EquityRP) .* obj.PlanDesign.StockWeight + obj.BondYield15 .* obj.PlanDesign.BondWeight;
+                obj.InitialValRate = (exp(obj.z0(2)*12)-1 + obj.PlanDesign.EquityRP)* obj.PlanDesign.StockWeight +(exp(obj.z0(2)*12)-1)* obj.PlanDesign.BondWeight;
             end
 
             obj.ValRateMat(obj.ValRateMat < obj.PlanDesign.Lbound) = obj.PlanDesign.Lbound;
@@ -309,7 +310,8 @@ classdef ALMStudy < handle
             elseif obj.TargetCalAssump.ValRateType == "FixValRate"
                 CurrValRate = obj.TargetCalAssump.FixValRate;
             else
-                CurrValRate = min(max(obj.TargetCalAssump.StockWeight*(exp(obj.z0(2)*12)-1+obj.TargetCalAssump.EquityRP) + obj.TargetCalAssump.BondWeight*(exp(obj.z0(2)*12)-1) + 0.0025, obj.TargetCalAssump.Lbound), obj.TargetCalAssump.Ubound);
+                CurrValRate = min(max(obj.TargetCalAssump.StockWeight*(exp(obj.z0(2)*12)-1+obj.TargetCalAssump.EquityRP) + obj.TargetCalAssump.BondWeight*(exp(obj.z0(2)*12)-1),
+				obj.TargetCalAssump.Lbound), obj.TargetCalAssump.Ubound);
             end
             
             RateIndex = find(obj.rates<=CurrValRate, 1, 'last');
