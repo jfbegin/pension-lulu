@@ -122,7 +122,8 @@ classdef GIM_GARCH_JF < handle
       suminfo.Residuals = Resi;
       suminfo.CondVariances = H;
       suminfo.LL = sum(logL);
-      suminfo.xCenter = xCenter
+      suminfo.xCenter = xCenter;
+      suminfo.lambda4 = obj.LambdaT(4);
     end
     
     function sim_result = generator(obj, startz0)

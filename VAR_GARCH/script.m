@@ -11,6 +11,7 @@ model =  GIM_GARCH_JF(paraminit, series, Sigma, HistMean);
 % suminfo = model.optimize(paraminit);
 load('suminfo');
 model.update(suminfo.xCenter);
+%suminfo.lambda4 = model.LambdaT(4)+1/2;
 
 sim_result = model.generator(HistMean);
 
