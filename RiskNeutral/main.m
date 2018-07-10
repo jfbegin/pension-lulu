@@ -23,7 +23,7 @@ inovs = RefMat(randn(1204,10000,179,'single')); %for GPU only
 
 %% Routine for Optimization
 RNEstimt = RNEstimation_2(suminfo, HistData, Sigma, HistMean, inovs, HistTStrtData);
-options = optimset('Display','iter','MaxIter', 1000, 'MaxFunEvals', 1000);
+options = optimset('Display','iter','MaxIter', 5000, 'MaxFunEvals', 5000);
 %startX = [-0.0012 0.0009 0.0022 0.0006 -0.0015 0.0001 -0.0008 0.0017 0.0003 0.0001 0.0005 -0.0010];
 startX = x;
 %startX = [-0.0017 0.0002 0.0057 0.0015 -0.0007 -0.0003 -0.0043 0.0055 -0.0001 0.0002 -0.0000 -0.0041];
@@ -32,10 +32,11 @@ x = fminsearch(@RNEstimt.RNEstGPU, startX, options);
 startX = x;
 csvwrite("lambdaSrDiv26(1).csv",x);
 x2 = fminsearch(@RNEstimt.RNEstGPU, x, options);
-x3 = fminsearch(@RNEstimt.RNEstGPU, x_test, options);
-x4 = fminsearch(@RNEstimt.RNEstGPU, x3, options);
+x3 = fminsearch(@RNEstimt.RNEstGPU, x_test, options); %%!! current run is in x3
+x4 = fminsearch(@RNEstimt.RNEstGPU, x_test, options); %% !! current run is in x4
+x2 = fminsearch(@RNEstimt.RNEstGPU, x_test, options); %% !! current run is in x2
 
-x5 = fminsearch(@RNEstimt.RNEstGPU, lambda, options);
+%x5 = fminsearch(@RNEstimt.RNEstGPU, lambda, options);
 tic
     RNEstimt.RNEstGPU(startX)
 toc
@@ -144,7 +145,7 @@ end
 
 
 %% Show Final Result
-outMat = RNEstimt.RNEstGPU(lambda);
+outMat = RNEstimt.RNEstGPU(x2);
 outMat = gather(outMat);
 actMat = RNEstimt.HistTStrtData;
 MSEmat = (outMat - actMat).^2;
@@ -153,8 +154,8 @@ MisPricTerm = outMat-actMat;
 mean_MisPric = mean(MisPricTerm,1);
 std_MisPric = var(MisPricTerm,1).^0.5;
 
-opt1Lambda0 = [lambda(1);lambda(2);0;RNEstimt.mu(4);0];
-opt1Lambda1 = [lambda(3:7); lambda(8:12); 0 0 0 0 0; RNEstimt.Beta(4,:); 0 0 0 0 0];
+opt1Lambda0 = [x2(1);x2(2);0;RNEstimt.mu(4)];
+opt1Lambda1 = [x2(3:6); x2(7:10); 0 0 0 0 ; RNEstimt.Beta(4,:)];
 RNBeta = RNEstimt.Beta-opt1Lambda1;
 
 plotX = (1:1:301);
