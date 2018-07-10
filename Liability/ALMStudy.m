@@ -1,3 +1,5 @@
+%% Generational accounting matrices for PUC method
+
 classdef ALMStudy < handle
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
@@ -120,6 +122,8 @@ classdef ALMStudy < handle
             obj.radix = 100;
             
            %% Simplified Mortality Table
+           % Could be changed with a life table to obtain different
+           % assumptions in terms of deterministic mortality. 
             obj.w = 85;
             obj.nStart = zeros(obj.w, 1);
             obj.nStart(obj.EntryAge:obj.w) = ones((obj.w - obj.EntryAge + 1), 1) .* 100;
@@ -148,11 +152,12 @@ classdef ALMStudy < handle
                                 
 
            %% Salary Increase
-            obj.StartSal = 50000;
-            obj.meric = 0.005;
-            obj.HistInf = 0.02;
+            obj.StartSal = 50000; % at plan inception for person aged 30
+            obj.meric = 0.005; % merit based increases
+            obj.HistInf = 0.02; % (assumed) inflation based increases
             
-            %Set up salary structure at inception, calculate total starting payroll
+            %Set up salary structure at inception, calculate total starting
+            %payroll (for all the cohorts) based on the assumptions
             obj.salary0 = zeros(obj.w, 1);
             obj.salary0(obj.EntryAge) = obj.StartSal;
             obj.salary0((obj.EntryAge + 1):(obj.RetAge - 1)) = obj.salary0(obj.EntryAge) * (1 + obj.meric) .^ (1:(obj.RetAge - obj.EntryAge - 1));
@@ -166,6 +171,7 @@ classdef ALMStudy < handle
                 obj.CumInf(:, i) = cumprod(1 + obj.InfAnnual(:, i));
             end           
             
+            % Actual salaries (under scenario s)
             obj.salary = reshape(kron(obj.CumInf, obj.salary0), [size(obj.salary0,1), size(obj.CumInf,1), size(obj.CumInf,2)]);
             
            %% Benefit Target Function
@@ -183,8 +189,11 @@ classdef ALMStudy < handle
             obj.TargetBen = TargetCalAssump.TargetBen;
             obj.ContriRate = TargetCalAssump.ContriRate;
             
+            % SetContri is the switch: if true then you get the benefit as
+            % a function of the contribution rate; otherwise, you get the
+            % contribution rate as a function of the target.
             if(TargetCalAssump.SetContri == true)
-                obj.BenTargetFunc(Obj.ContriRate);
+                obj.BenTargetFunc(obj.ContriRate);
             else
                 obj.ContriRateFunc(obj.TargetBen);
             end
@@ -202,10 +211,11 @@ classdef ALMStudy < handle
             obj.ValRateFunc();
             obj.AssetReturnFunc(obj.PlanDesign.StockWeight, obj.PlanDesign.BondWeight);
             
-            %% IC
+            %% EAN Initial Contributions (that are brought in the plan)
             obj.InitialLiaICFunc();        
             
-            %% PUC 
+            %% PUC Initial Contributions
+            % EAN > PUC by about 5%, on average.
             obj.InitialLiaPUCFunc(); %InitialLiaPUC
             
            %% PUC closed Group (function of scenario)
@@ -282,7 +292,7 @@ classdef ALMStudy < handle
             elseif obj.PlanDesign.ValRateType == "FixValRate"
                 obj.ValRateMat = ones(obj.ProjYear+1, obj.nscen) .* obj.PlanDesign.FixValRate;
                 obj.InitialValRate = obj.PlanDesign.FixValRate;
-            else
+            else %EROA
                 obj.ValRateMat = (obj.BondYield15+obj.PlanDesign.EquityRP) .* obj.PlanDesign.StockWeight + obj.BondYield15 .* obj.PlanDesign.BondWeight;
                 obj.InitialValRate = (exp(obj.z0(2)*12)-1 + obj.PlanDesign.EquityRP)* obj.PlanDesign.StockWeight +(exp(obj.z0(2)*12)-1)* obj.PlanDesign.BondWeight;
             end
@@ -329,11 +339,15 @@ classdef ALMStudy < handle
             
             %PVB + PVFB
             
+            % 35 = years of service (assuming no lapse)
             PVFB = obj.TargetBen .* ProjFAE1 *35 .* AnnFactor .* obj.nStart(obj.EntryAge:obj.w);
             
             %Annuity Factor for discounting Future Contribution taking into
             %account of the salary increase and the discount rate is
             %consistent with the one discounting benefit
+            
+            % This obj.rates is highly variable -> these annuity factors
+            % can change drastically from one year to another.... ???
             RateSalInc =  (1 + obj.rates(RateIndex)) / ((1 + obj.meric) * (1 + obj.HistInf)) - 1;
             DisctSal = 1 / (1 + RateSalInc);           
             Index = (obj.RetAge - obj.EntryAge):-1:1;
@@ -342,8 +356,6 @@ classdef ALMStudy < handle
             
             %PVFC 
             PVFC = obj.ContriRate .* Salary0 .* AnnFactorContri .* obj.nStart(obj.EntryAge:obj.w);
-            disp(size(PVFC));
-            disp(size(PVFB));
             
             obj.InitialLiaICGen = PVFB - PVFC;
             obj.InitialLiaIC = sum(obj.InitialLiaICGen);
@@ -378,7 +390,7 @@ classdef ALMStudy < handle
         
         %% PUCProjection
         function obj = PUCProjection(obj, scen)
-            SalaryMatrix = obj.salary(obj.EntryAge:obj.w,:,scen);
+            SalaryMatrix = obj.salary(obj.EntryAge:obj.w,:,scen); % Actual salary
             YearOfService = (obj.RetAge - obj.EntryAge) .* ones(obj.w - obj.EntryAge + 1, 1);
             YearOfService(1:(obj.RetAge - obj.EntryAge)) = 0:(obj.RetAge - obj.EntryAge - 1);
 
@@ -411,10 +423,12 @@ classdef ALMStudy < handle
             ContribPaid(:,2:(obj.ProjYear+1)) = obj.ContriRate * SalaryMatrix(:, 1:obj.ProjYear);
 
             % At time 0
+            % Active members
             for i = 1:(obj.RetAge - obj.EntryAge)
                 ProjFAE(i,1) = Salary0(i) * ((1+obj.meric)*(1+obj.HistInf))^(obj.RetAge-obj.EntryAge - i);
             end
-
+            
+            % Retired members
             for i = (obj.RetAge - obj.EntryAge + 1):(obj.w - obj.EntryAge + 1)
                 ProjFAE(i,1) = Salary0(obj.RetAge - obj.EntryAge) * (1+obj.HistInf)^(-i+(obj.RetAge-obj.EntryAge));
             end
@@ -426,20 +440,28 @@ classdef ALMStudy < handle
                 ProjFAE((obj.RetAge - obj.EntryAge + 1):(obj.w - obj.EntryAge + 1), i) = ProjFAE((obj.RetAge - obj.EntryAge):(obj.w - obj.EntryAge), (i - 1));
             end
 
+            % Original "matrices" use a constant target benefit
+            
 %            OriginalTargetAccBen(:, 1) = obj.TargetBen .* ProjFAE(:, 1) .* YearOfService;
             OriginalTargetAccBen(:, 1) = obj.InitialTargetPUC.* ProjFAE(:, 1) .* YearOfService;
             
             OriginalTargetAccLia(:, 1) = obj.nStart(obj.EntryAge:obj.w) .* OriginalTargetAccBen(:, 1) .* AnnFacMat(:, 1);
             TotalOriginalAccLia(1) = sum(OriginalTargetAccLia(:, 1));
 
+            % Target "matrices" are updated based on the target
+            
  %           TargetAccBen(:, 1) = obj.TargetBen .* ProjFAE(:, 1) .* YearOfService;
             TargetAccBen(:, 1) = obj.InitialTargetPUC.* ProjFAE(:, 1) .* YearOfService;
             TargetAccLia(:, 1) = obj.nStart(obj.EntryAge:obj.w) .* TargetAccBen(:, 1) .* AnnFacMat(:, 1);
             TotalTargetAccLia(1) = sum(TargetAccLia(:, 1));
             
+            % EOY is before paying benefits and receiving contribution, but
+            % after interest rate is paid out
+            
             TotalAssetEOY(1) = obj.InitialFundRatio * obj.InitialLiaPUC;
             FundRatio(1) = TotalAssetEOY(1)/TotalTargetAccLia(1);
 
+            % Action for the target
             if (obj.PlanDesign.NoActionRange==true)
                 if (obj.PlanDesign.TriggerLFR <= FundRatio(1)) && (FundRatio(1) <= obj.PlanDesign.TriggerUFR) 
                     AdjAccBen(:, 1) = TargetAccBen(:, 1);
@@ -456,6 +478,8 @@ classdef ALMStudy < handle
             else 
                 AdjAccBen(:,1) = FundRatio(1) .* TargetAccBen(:,1);
             end
+            
+            % Adj is for "after time t" adjustments (still EOY)
             
             AdjAccLia(:, 1) = obj.nStart(obj.EntryAge:obj.w) .* AdjAccBen(:, 1) .* AnnFacMat(:, 1);
 

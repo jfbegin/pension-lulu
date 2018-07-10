@@ -432,7 +432,7 @@ classdef ALMStudyEAN < handle
         end
         
         
-        %% PUCProjection
+        %% EANProjection
         function obj = EANProjection(obj, scen)
             SalaryMatrix = obj.salary(obj.EntryAge:obj.w,:,scen);
             YearOfService = (obj.RetAge - obj.EntryAge) .* ones(obj.w - obj.EntryAge + 1, 1);
@@ -485,6 +485,7 @@ classdef ALMStudyEAN < handle
             
             %Calculating the pre-adjustment accrual liability
             %PVFB
+            % Using 35 instead of the year of service for PVFB
             PVFB(:,1) = obj.TargetBen .* ProjFAE(:,1) .*(obj.RetAge-obj.EntryAge) .* AnnFacMat(:, 1); 
             
             RateSalInc =  (1 + obj.rates(RateIndex(1))) / ((1 + obj.meric) * (1 + obj.HistInf)) - 1;
@@ -495,11 +496,15 @@ classdef ALMStudyEAN < handle
             
             AnnFactorsNC = (1 - DisctSal ^ (obj.RetAge - obj.EntryAge)) / (1 - DisctSal);
             AnnFactorsBenNC = AnnFacMat(1,1);
-            NCRate(:, 1) = obj.TargetBen.* (((obj.RetAge-obj.EntryAge) - YearOfService)+YearOfService ).* (((1 + obj.meric) * (1 + obj.HistInf)) ^ (obj.RetAge - obj.EntryAge - 1) .* AnnFactorsBenNC) ./ AnnFactorsNC;
+            
+            % Normal cost rate (it cancels out with what is on the
+            % denominator ???)
+            NCRate(:, 1) = obj.TargetBen.* ((obj.RetAge-obj.EntryAge)).* (((1 + obj.meric) * (1 + obj.HistInf)) ^ (obj.RetAge - obj.EntryAge - 1) .* AnnFactorsBenNC) ./ AnnFactorsNC;
             
             OrigianlTargetBen (:,1) = obj.TargetBen .* ProjFAE(:,1).*(obj.RetAge-obj.EntryAge);
             
-            %PVFC 
+            %PVFNC 
+            % One of changes for EAN
             PVFC(:,1) = NCRate(:,1) .* Salary0 .* AnnFactorContri;
 
             OriginalTargetAccLia(:,1) = (PVFB(:,1) - PVFC(:,1));

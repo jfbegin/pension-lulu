@@ -74,45 +74,48 @@ set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(
 print(h,'projrate','-dpdf','-r0')
 
 %% Plot of Historical Data
-plotM = datetime(1991,5,1) + calmonths(0:301);
-h = figure;
+% Dep. of plot calculation
+if false
+  plotM = datetime(1991,5,1) + calmonths(0:301);
+  h = figure;
 
-plotHist(:,[1 2 5]) = exp(HistData(:,[1 2 5]));
+  plotHist(:,[1 2 5]) = exp(HistData(:,[1 2 5]));
 
-plotTitle = ["Short-term Bond Yield", "Long-term Bond Yield", "Inflation Rate", "Excess Stock Return", "Dividend Yield"];
+  plotTitle = ["Short-term Bond Yield", "Long-term Bond Yield", "Inflation Rate", "Excess Stock Return", "Dividend Yield"];
 
-for i = 1:5
-    subplot(5,1,i)    
-    plot(plot( :,i));
-    title(plotTitle(i));
-    xlabel("Year");
-    ylabel("Monthly Rate")
-end
+  for i = 1:5
+      subplot(5,1,i)    
+      plot(plot( :,i));
+      title(plotTitle(i));
+      xlabel("Year");
+      ylabel("Monthly Rate")
+  end
 
-set(h,'Units','Inches');
-pos = get(h,'Position');
-set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
-print(h,'projrate','-dpdf','-r0')
+  set(h,'Units','Inches');
+  pos = get(h,'Position');
+  set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
+  print(h,'projrate','-dpdf','-r0')
+  
+  plotX = (1:1:661);
+  figure;
 
-
-
-plotX = (1:1:661);
-figure;
-
-for i = 1:5
-    var1 = squeeze(rn_Zt(:,i,:))';
-    prct1 = prctile(var1,[5 25 50 75 95], 1);
-    subplot(3,2,i)
-    plot(plotX, prct1(1,2:662), plotX, prct1(2,2:662), plotX, prct1(3,2:662), plotX, prct1(4,2:662), plotX, prct1(5,2:662));
+  for i = 1:5
+      var1 = squeeze(rn_Zt(:,i,:))';
+      prct1 = prctile(var1,[5 25 50 75 95], 1);
+      subplot(3,2,i)
+      plot(plotX, prct1(1,2:662), plotX, prct1(2,2:662), plotX, prct1(3,2:662), plotX, prct1(4,2:662), plotX, prct1(5,2:662));
+  end
 end
 
 %% Get the Asset Scenarios
 rn_assetScenario = AssetScenario(rn_Zt, size(goodScen,2), 55, rn_termStruct);
 rw_assetScenario = AssetScenario(rw_Zt, size(goodScen,2), 55, rw_termStruct);
 
-
 %% Clean Asset Return > 200
 % call ALMStudy first -- rn_ALMStudy = ALMStudy(55, 9306, rn_assetScenario, 1, TargetCalAssump, PlanDesign);
+
+%% STOP !!! We need to run the liability code before running this part. 
+
 a = rn_ALMStudy.ARMat;
 [X,Y] = ind2sub(size(a), find(a>200));
 TooBigIdx = unique(Y);

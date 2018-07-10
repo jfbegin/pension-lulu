@@ -57,8 +57,8 @@ classdef VBALMStudy < handle
         function obj = VBALMStudy(ALMResult ,DCALMResult)
             %UNTITLED Construct an instance of this class
             %   Detailed explanation goes here
-            obj.ALMResult = ALMResult;
-            obj.DCALMResult = DCALMResult;
+            obj.ALMResult = ALMResult; % RN version of the ALM results
+            obj.DCALMResult = DCALMResult; % RN version of DC ALM results
             obj.GenerationCashFlow();
             obj.DCGenerationCashFlow();
             obj.GenerationValueFunc();
@@ -67,6 +67,8 @@ classdef VBALMStudy < handle
         end
         
         function obj = GenerationCashFlow(obj)
+          % Rearranging generational accounting matrices as a function of
+          % cohort and time instead of age and time. 
             w = obj.ALMResult.w;
             EntryAge = obj.ALMResult.EntryAge;
             ProjYear = obj.ALMResult.ProjYear;
@@ -100,6 +102,12 @@ classdef VBALMStudy < handle
                         CashflowMat(:, j);
                 end             
             end
+            
+            % Residual payments: difference between fictitious accounts ->
+            % the difference what they paid (accrued at asset rate) and
+            % what they received. Residual amounts are distributed
+            % proportionally to these values, w.r.t. total assets available
+            % at the end.
             
 %            obj.TermEndAccLia = zeros(w + (ProjYear - EntryAge), nscen);
             obj.TermEndAccLia = zeros(w + (ProjYear - EntryAge)+1, nscen);
