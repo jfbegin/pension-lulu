@@ -1,5 +1,6 @@
 classdef AssetScenario < handle
-
+    % This class summarizes and aggregates the output from the ESG, making
+    % it easier in the liabilities calculations. 
     properties
         Zt
         nScen

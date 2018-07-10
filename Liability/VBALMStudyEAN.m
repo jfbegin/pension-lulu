@@ -101,6 +101,11 @@ classdef VBALMStudyEAN < handle
                 end             
             end
             
+            %% CHANGE WITH PUC !
+            % The only difference with VBALMStudy: in EAN, we have some 
+            % estimator of the residual amount, which we did not have with 
+            % the PUC method.
+            
             obj.TermEndAccLia = zeros(w + (ProjYear - EntryAge) +1, nscen);
             obj.TermEndAccLia(1:(obj.ALMResult.w-EntryAge +1),(1:nscen)) = obj.ALMResult.SimulationResult.EndLiaInd(:,(1:nscen));
             % the contribution is negative cash flow, so use negative value
@@ -126,6 +131,7 @@ classdef VBALMStudyEAN < handle
             end            
         end
         
+        % EXACTLY THE SAME AS FOR PUC !
         function obj = DCGenerationCashFlow(obj)
             w = obj.DCALMResult.w;
             EntryAge = obj.DCALMResult.EntryAge;
