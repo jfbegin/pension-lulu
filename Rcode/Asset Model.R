@@ -25,7 +25,7 @@ library(matlib)
 ##########################################################################
 
 #bonds
-CDNbonds <- read.table("D:\\Fall Research\\Data\\bond yield partial.csv", header=TRUE, sep=",", na.strings=" ")
+CDNbonds <- read.table("bond yield partial.csv", header=TRUE, sep=",", na.strings=" ")
 
 plot(CDNbonds$X2.year, type="l",xaxt='n', col="green", main="Bond Yields",ylab="annualized bond yields",lwd=1,xlab="time")
 axis(side=1, at=seq(1, 306, by=60),labels=CDNbonds$Date[seq(1, 306, by=60)])
@@ -51,14 +51,14 @@ lines(BondsMonthly[, 9], type = "l", lwd = 1, col = "blue")
 
 
 #inflation
-CDNinflation <- read.table("D:\\Fall Research\\Data\\canada cpi.csv", header=TRUE, sep=",", na.strings=" ")
+CDNinflation <- read.table("canada cpi.csv", header=TRUE, sep=",", na.strings=" ")
 CDNinfrate<-CDNinflation$continuous
 
 plot(CDNinfrate, type="l", main = "Inflation Rate", xaxt='n', xlab="Date", ylab="Monthly Rate")
 axis(side=1, at=seq(1, 306, by=60),labels=CDNbonds$Date[seq(1, 306, by=60)])
 
 #Canadian stock TSX 
-TSXindex <- read.table("D:\\Fall Research\\Data\\TSX with dividen.csv", header=TRUE, sep=",", na.strings=" ")
+TSXindex <- read.table("TSX with dividen.csv", header=TRUE, sep=",", na.strings=" ")
 CDNstock <- TSXindex$conti
 #CDNstock <- TSXindex$conti + CDNdividend
 
@@ -96,7 +96,7 @@ MeanData <- apply(X = VARinput, MARGIN = 2, FUN = mean)
 StdData <- apply(X = VARinput, MARGIN = 2, FUN = sd)
 
 ##Combine the input of VAR data into one data frame
-VARinput <- data.frame(tbill = BondsMonthly[,2], bonds15 = BondsMonthly[,9], infrate = CDNinfrate, TSXexcess = ExCDNstock, Dividend = CDNdividend)
+VARinput <- data.frame(tbill = BondsMonthly[,2], bonds15 = BondsMonthly[,9], infrate = CDNinfrate, TSXexcess = ExCDNstock)
 MeanData <- apply(X=VARinput, MARGIN=2, FUN=mean)
 StdData  <- apply(X=VARinput, MARGIN=2, FUN=sd)
 
@@ -106,7 +106,6 @@ ZeroMeanData$tbill <- VARinput$tbill-MeanData[1]
 ZeroMeanData$bonds15 <- VARinput$bonds15-MeanData[2]
 ZeroMeanData$infrate <- VARinput$infrate-MeanData[3]
 ZeroMeanData$TSXexcess <- VARinput$TSXexcess - MeanData[4]
-ZeroMeanData$Dividend <- VARinput$Dividend - MeanData[5]
 
 
 ##Estimate the VAR(1) model
@@ -135,59 +134,71 @@ abseigen=abs(eigen(B)$value)
 
 ##Affine Term Structure model
 
+
+
+CDNbonds_full <- read.table("bond yield monthly full.csv", header=TRUE, sep=",", na.strings=" ")
+
+
+
 #data used to fit the affine term model
-rankedCDNbonds=BondsMonthly[,c(1:9)]
+rankedCDNbonds=CDNbonds_full[,c(1:8)]
 histdata=as.matrix(rankedCDNbonds)
 VARaffine = as.matrix(VARinput)
 Nhist=nrow(histdata)
 
 #delta in pricing kernel
 delta0=0
-delta1=c(1,0,0,0,0)
+delta1=c(1,0,0,0)
 
 #Estimating the parameter by minimize the value of sum of squares
 Optimizefunc = function(sl){
-  sl1matrix=matrix(data = c(sl[1:5],sl[6:10],0,0,0,0,0,B[4,],0,0,0,0,0),5,5,byrow=TRUE)
-  sl0vector=c(sl[11],sl[12],0,Nu[4],0)
+  sl1matrix=matrix(data = c(sl[1:4],sl[5:8],0,0,0,0,B[4,]),4,4,byrow=TRUE)
+  sl0vector=c(sl[9],sl[10],0,Nu[4])
   
   AnVector=numeric(181)
-  BnMatrix=matrix(data=0,nrow=5,ncol=181)
+  BnMatrix=matrix(data=0,nrow=4,ncol=181)
   
   for(i in 2:181){
     BnMatrix[,i] = -delta1+t(B-sl1matrix)%*%BnMatrix[,i-1]
     AnVector[i]  = -delta0+AnVector[i-1]+t(BnMatrix[,i-1])%*%(Nu-sl0vector)+0.5*t(BnMatrix[,i-1])%*%t(CDSigma)%*%CDSigma%*%BnMatrix[,i-1]
   }
   
-  yfit=matrix(data=0,nrow=Nhist,ncol=7)
+  yfit=matrix(data=0,nrow=Nhist,ncol=8)
   
   for (i in 1:Nhist){
-	yfit[i, 1] = -(AnVector[2] + sum(BnMatrix[, 2] * (VARaffine[i,])))
-#	yfit[i, 1] = -1 / 3 * (AnVector[4] - sum(BnMatrix[, 4] * (VARaffine[i,] / 12)))
-#	yfit[i, 1] = -1 / 12 * (AnVector[13] - sum(BnMatrix[, 13] * (VARaffine[i,])))
-	yfit[i, 2] = -1 / 24 * (AnVector[25] + sum(BnMatrix[, 25] * (VARaffine[i,])))
-	yfit[i, 3] = -1 / 36 * (AnVector[37] + sum(BnMatrix[, 37] * (VARaffine[i,])))
-	yfit[i, 4] = -1 / 60 * (AnVector[61] + sum(BnMatrix[, 61] * (VARaffine[i,])))
-	yfit[i, 5] = -1 / 84 * (AnVector[85] + sum(BnMatrix[, 85] * (VARaffine[i,])))
-	yfit[i, 6] = -1 / 120 * (AnVector[121] + sum(BnMatrix[, 121] * (VARaffine[i,])))
-	yfit[i, 7] = -1 / 180 * (AnVector[181] + sum(BnMatrix[, 181] * (VARaffine[i,])))
+	yfit[i, 1] = -1 / 12 * (AnVector[13] - sum(BnMatrix[, 13] * (VARaffine[i,])))
+	yfit[i, 2] = -1 / 36 * (AnVector[37] + sum(BnMatrix[, 37] * (VARaffine[i,])))
+	yfit[i, 3] = -1 / 60 * (AnVector[61] + sum(BnMatrix[, 61] * (VARaffine[i,])))
+	yfit[i, 4] = -1 / 84 * (AnVector[85] + sum(BnMatrix[, 85] * (VARaffine[i,])))
+	yfit[i, 5] = -1 / 120 * (AnVector[121] + sum(BnMatrix[, 121] * (VARaffine[i,])))
+	yfit[i, 6] = -1 / 144 * (AnVector[145] + sum(BnMatrix[, 145] * (VARaffine[i,])))
+	yfit[i, 7] = -1 / 168 * (AnVector[169] + sum(BnMatrix[, 169] * (VARaffine[i,])))
+	yfit[i, 8] = -1 / 180 * (AnVector[181] + sum(BnMatrix[, 181] * (VARaffine[i,])))
   }
   
-  sumsquared = sum((yfit-histdata[,c(1,4:9)])^2)
+  sumsquared = sum((yfit-histdata)^2)
   return(sumsquared)
 
 }
 
-slbest=vector("double",12)
+slbest=vector("double",10)
 minfunc=100
 
-for(i in 1:100){
-  sl<-ucminf(par=runif(12,min=-0.02,max=0.02),fn=Optimizefunc,control = list(xtol = 1e-30))$par
+for(i in 1:1){
+  sl<-ucminf(par=runif(10,min=-0.0000,max=0.0000),fn=Optimizefunc,control = list(xtol = 1e-30))$par
   vfunc<-Optimizefunc(sl)
   if(vfunc<minfunc){
     slbest=sl
-    minfunc=vfunc
+    B=vfunc
   }
 }
+
+
+L1 = matrix(data=c(slbest[1:4],slbest[5:8],0,0,0,0,B[4,]),4,4,byrow=TRUE)
+L0 = c(slbest[9],slbest[10],0,Nu[4])
+
+
+
 
 
 #slsaved<-sl
