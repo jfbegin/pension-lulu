@@ -28,7 +28,7 @@ function yTermLSE = RNEstGPU(obj, lambda)
         Cmat      %4*4 diagonal matrix, the constant term in the GARCH equation
         A1        %4*4 diagonal matrix, the ARCH coefficient in the GARCH equation
         B1        %4*4 diagonal matrix, the GARCH coefficient in the GARCH equation
-        LambdaT   %[0, 0, 0, lambda4 - 0.5]
+        LambdaT   %[-0.5, -0.5, 0, lambda4 - 0.5, -0.5]
         Sigma0    %Longterm variance
         revlevel  %mean reverting level of the VAR model
         T         %maturities in month
@@ -132,12 +132,12 @@ function yTermLSE = RNEstGPU(obj, lambda)
             
             rng('default');
 %            inovt = randn(5,10000,660,'single');
-            inovt = randn(4,10000,661,'single');
+            inovt = randn(5,10000,661,'single');
             
 %            LastResT = obj.HistRest(301,:)';
 %            LastSigT = obj.HistHMat(301,:)';
             
-            LastResT = [0;0;0;0];
+            LastResT = obj.Sigma0.^(1/2);
             LastSigT = obj.Sigma0;
                      
             SigmaT = diag(obj.Cmat) + diag(obj.A1).*(LastResT.^2) + diag(obj.B1) .* LastSigT;           
@@ -169,23 +169,23 @@ function yTermLSE = RNEstGPU(obj, lambda)
         end        
 
         function yStruct = oneSceBondYield(obj, scen)
-            m_idx = (1:4:2644)';
+            m_idx = (1:5:3305)';
             A = gpuArray(repmat(diag(obj.A1),661,1));
             B = gpuArray(repmat(diag(obj.B1),661,1));
             C = gpuArray(repmat(diag(obj.Cmat),661,1));
             L4V = gpuArray(repmat(obj.L4Vec,661,1));
             LRN = gpuArray(repmat(obj.LambdaRN, 661, 1));
                    
-            Z0 = gpuArray(reshape(squeeze(obj.simZt(1:661,:,scen))', 2644, 1));
-            Z1 = gpuArray(reshape(squeeze(obj.simZt(2:662,:,scen))', 2644, 1));
+            Z0 = gpuArray(reshape(squeeze(obj.simZt(1:661,:,scen))', 3305, 1));
+            Z1 = gpuArray(reshape(squeeze(obj.simZt(2:662,:,scen))', 3305, 1));
           
             L0 = gpuArray(repmat(obj.lambda0, 661, 1));
             L1 = gpuArray(kron(eye(661), obj.lambda1));
             mu_L0 = gpuArray(repmat(obj.mu - obj.lambda0, 661, 1));
             B_L1 = gpuArray(kron(eye(661), obj.Beta - obj.lambda1));
             
-            LastResT = gpuArray(reshape(squeeze(obj.simRest(:,:,scen))', 2644, 1));
-            LastSigT = gpuArray(reshape(squeeze(obj.simHt(:,:,scen))', 2644, 1));
+            LastResT = gpuArray(reshape(squeeze(obj.simRest(:,:,scen))', 3305, 1));
+            LastSigT = gpuArray(reshape(squeeze(obj.simHt(:,:,scen))', 3305, 1));
             
             SigmaT = gpuArray(C + A .* ((LastResT - L4V .* LastSigT - (L0 + L1 * Z0)).^2)...
                      + B .* LastSigT);
@@ -193,13 +193,13 @@ function yTermLSE = RNEstGPU(obj, lambda)
             SigmaT = gpuArray(repmat(SigmaT, 1, obj.numScen));
             LastZT = gpuArray(repmat(Z1, 1, obj.numScen));          
             yStruct = gpuArray(zeros(661, size(obj.T, 2)));
-            sumZT = gpuArray(LastZT(m_idx,:));
+            sumZT = gpuArray(exp(LastZT(m_idx,:)));
             idx = 1;
             
             for i=2:180
                 Yt = sqrt(SigmaT) .* obj.inovs.m(:,:,i-1);
                 Zt =  (SigmaT .* LRN + mu_L0) + B_L1 * LastZT + Yt;           
-                sumZT = sumZT + Zt(m_idx,:);
+                sumZT = sumZT + exp(Zt(m_idx,:));
                 if i == obj.T(idx)
                     yStruct(:,idx) = -log(mean(exp(-sumZT),2))/obj.T(idx)*12;
                     idx = idx + 1;
@@ -215,7 +215,7 @@ function yTermLSE = RNEstGPU(obj, lambda)
         end
 
         function yStruct = oneSceBondYieldYear(obj, scen)
-            m_idx = (1:4:224)';
+            m_idx = (1:5:280)';
             A = gpuArray(repmat(diag(obj.A1),56,1));
             B = gpuArray(repmat(diag(obj.B1),56,1));
             C = gpuArray(repmat(diag(obj.Cmat),56,1));
@@ -225,8 +225,8 @@ function yTermLSE = RNEstGPU(obj, lambda)
 %            Z0 = gpuArray(reshape(squeeze(obj.simZt(1:12:661,:,scen))', 280, 1));
 %            Z1 = gpuArray(reshape(squeeze(obj.simZt(2:12:662,:,scen))', 280, 1));
             
-            Z0 = gpuArray(reshape(squeeze(obj.simZt(2:12:662,:,scen))', 224, 1));
-            Z1 = gpuArray(reshape(squeeze(obj.simZt(3:12:663,:,scen))', 224, 1));
+            Z0 = gpuArray(reshape(squeeze(obj.simZt(2:12:662,:,scen))', 280, 1));
+            Z1 = gpuArray(reshape(squeeze(obj.simZt(3:12:663,:,scen))', 280, 1));
           
             L0 = gpuArray(repmat(obj.lambda0, 56, 1));
             L1 = gpuArray(kron(eye(56), obj.lambda1));
@@ -236,8 +236,8 @@ function yTermLSE = RNEstGPU(obj, lambda)
 %            LastResT = gpuArray(reshape(squeeze(obj.simRest(1:12:661,:,scen))', 280, 1));
 %            LastSigT = gpuArray(reshape(squeeze(obj.simHt(1:12:661,:,scen))', 280, 1));
             
-            LastResT = gpuArray(reshape(squeeze(obj.simRest(2:12:662,:,scen))', 224, 1));
-            LastSigT = gpuArray(reshape(squeeze(obj.simHt(2:12:662,:,scen))', 224, 1));
+            LastResT = gpuArray(reshape(squeeze(obj.simRest(2:12:662,:,scen))', 280, 1));
+            LastSigT = gpuArray(reshape(squeeze(obj.simHt(2:12:662,:,scen))', 280, 1));
             
             SigmaT = gpuArray(C + A .* ((LastResT - L4V .* LastSigT - (L0 + L1 * Z0)).^2)...
                      + B .* LastSigT);
@@ -245,13 +245,13 @@ function yTermLSE = RNEstGPU(obj, lambda)
             SigmaT = gpuArray(repmat(SigmaT, 1, obj.numScen));
             LastZT = gpuArray(repmat(Z1, 1, obj.numScen));          
             yStruct = gpuArray(zeros(56, size(obj.T, 2)));
-            sumZT = gpuArray(LastZT(m_idx,:));
+            sumZT = gpuArray(exp(LastZT(m_idx,:)));
             idx = 1;
             
             for i=2:180
                 Yt = sqrt(SigmaT) .* obj.inovs.m(:,:,i-1);
                 Zt =  (SigmaT .* LRN + mu_L0) + B_L1 * LastZT + Yt;           
-                sumZT = sumZT + Zt(m_idx,:);
+                sumZT = sumZT + exp(Zt(m_idx,:));
                 if i == obj.T(idx)
                     yStruct(:,idx) = -log(mean(exp(-sumZT),2))/obj.T(idx)*12;
                     idx = idx + 1;

@@ -137,8 +137,7 @@ abseigen=abs(eigen(B)$value)
 
 
 CDNbonds_full <- read.table("bond yield monthly full.csv", header=TRUE, sep=",", na.strings=" ")
-
-
+CDNbonds_full = CDNbonds_full[,c(2:9)]
 
 #data used to fit the affine term model
 rankedCDNbonds=CDNbonds_full[,c(1:8)]
@@ -166,14 +165,14 @@ Optimizefunc = function(sl){
   yfit=matrix(data=0,nrow=Nhist,ncol=8)
   
   for (i in 1:Nhist){
-	yfit[i, 1] = -1 / 12 * (AnVector[13] - sum(BnMatrix[, 13] * (VARaffine[i,])))
-	yfit[i, 2] = -1 / 36 * (AnVector[37] + sum(BnMatrix[, 37] * (VARaffine[i,])))
-	yfit[i, 3] = -1 / 60 * (AnVector[61] + sum(BnMatrix[, 61] * (VARaffine[i,])))
-	yfit[i, 4] = -1 / 84 * (AnVector[85] + sum(BnMatrix[, 85] * (VARaffine[i,])))
-	yfit[i, 5] = -1 / 120 * (AnVector[121] + sum(BnMatrix[, 121] * (VARaffine[i,])))
-	yfit[i, 6] = -1 / 144 * (AnVector[145] + sum(BnMatrix[, 145] * (VARaffine[i,])))
-	yfit[i, 7] = -1 / 168 * (AnVector[169] + sum(BnMatrix[, 169] * (VARaffine[i,])))
-	yfit[i, 8] = -1 / 180 * (AnVector[181] + sum(BnMatrix[, 181] * (VARaffine[i,])))
+	  yfit[i, 1] = -1 / 12 * (AnVector[13] - sum(BnMatrix[, 13] * (VARaffine[i,])))*12
+	  yfit[i, 2] = -1 / 36 * (AnVector[37] + sum(BnMatrix[, 37] * (VARaffine[i,])))*12
+	  yfit[i, 3] = -1 / 60 * (AnVector[61] + sum(BnMatrix[, 61] * (VARaffine[i,])))*12
+	  yfit[i, 4] = -1 / 84 * (AnVector[85] + sum(BnMatrix[, 85] * (VARaffine[i,])))*12
+	  yfit[i, 5] = -1 / 120 * (AnVector[121] + sum(BnMatrix[, 121] * (VARaffine[i,])))*12
+	  yfit[i, 6] = -1 / 144 * (AnVector[145] + sum(BnMatrix[, 145] * (VARaffine[i,])))*12
+	  yfit[i, 7] = -1 / 168 * (AnVector[169] + sum(BnMatrix[, 169] * (VARaffine[i,])))*12
+	  yfit[i, 8] = -1 / 180 * (AnVector[181] + sum(BnMatrix[, 181] * (VARaffine[i,])))*12
   }
   
   sumsquared = sum((yfit-histdata)^2)
@@ -184,12 +183,13 @@ Optimizefunc = function(sl){
 slbest=vector("double",10)
 minfunc=100
 
-for(i in 1:1){
-  sl<-ucminf(par=runif(10,min=-0.0000,max=0.0000),fn=Optimizefunc,control = list(xtol = 1e-30))$par
+for(i in 1:1000){
+  sl<-ucminf(par=runif(10,min=-0.05,max=0.05),fn=Optimizefunc,control = list(xtol = 1e-30))$par
   vfunc<-Optimizefunc(sl)
   if(vfunc<minfunc){
     slbest=sl
-    B=vfunc
+    minfunc=vfunc
+    print(vfunc)
   }
 }
 
@@ -203,7 +203,7 @@ L0 = c(slbest[9],slbest[10],0,Nu[4])
 
 #slsaved<-sl
 sl <- slbest
-slsaved11 <- sl
+slsaved11 <- slbest
 
 slbest = vector("double", 12)
 minfunc = 100

@@ -23,12 +23,12 @@ function yTermLSE = RNEstGPU(obj, lambda)
     takes around 10 seconds to run 
 %}
     properties      
-        mu        %5*1 vector, the constant term in the VAR equation
-        Beta      %5*5 matrix, the auto correlation coefficient
-        Cmat      %5*5 diagonal matrix, the constant term in the GARCH equation
-        A1        %5*5 diagonal matrix, the ARCH coefficient in the GARCH equation
-        B1        %5*5 diagonal matrix, the GARCH coefficient in the GARCH equation
-        LambdaT   %[-0.5, -0.5, 0, lambda4 - 0.5, -0.5]
+        mu        %4*1 vector, the constant term in the VAR equation
+        Beta      %4*4 matrix, the auto correlation coefficient
+        Cmat      %4*4 diagonal matrix, the constant term in the GARCH equation
+        A1        %4*4 diagonal matrix, the ARCH coefficient in the GARCH equation
+        B1        %4*4 diagonal matrix, the GARCH coefficient in the GARCH equation
+        LambdaT   %[0, 0, 0, lambda4 - 0.5]
         Sigma0    %Longterm variance
         revlevel  %mean reverting level of the VAR model
         T         %maturities in month
@@ -47,7 +47,7 @@ function yTermLSE = RNEstGPU(obj, lambda)
         
         % inovs and HistData are passed by reference
         inovs     %inovation terms generate from Normal(0, 1), 
-                  %4 dimensions:10000 scenarios for 5 variables for 180 months starting from 301 time points in historical data
+                  %4 dimensions:10000 scenarios for 4 variables for 180 months starting from 301 time points in historical data
         HistData  %Historical Data
         HistRest  %Historical Residual 
         HistHMat  %Historical Ht Matrix
@@ -60,21 +60,21 @@ function yTermLSE = RNEstGPU(obj, lambda)
 
     
     methods        
-        function obj = SimResultRN(param, HistData, Sigma, revlevel, HistHMat, HistRest, inovs, HistTStrtData, lambda)
+        function obj = SimResultRN(suminfo, HistData, Sigma, revlevel, inovs, HistTStrtData, lambda)
             % Constructor
             if nargin > 0
                 obj.numScen = 10000;
                 obj.revlevel = revlevel;
-                obj.update(param, lambda);
+                obj.update(suminfo, lambda);
                 obj.HistData = HistData;
                 obj.Sigma = Sigma;
                 obj.inovs = inovs;
                 obj.T = [12 24 36 48 60 72 84 96 108 120 132 144 156 168 180];
-                obj.HistHMat = HistHMat;
-                obj.HistRest = HistRest;
-                obj.L4Vec = [0; 0; 0; param(41); 0];
+                obj.HistHMat = suminfo.CondVariances;
+                obj.HistRest = suminfo.Residuals;
+                obj.L4Vec =  [0; 0; 0; suminfo.lambda4];
                 %obj.LambdaRN = diag(obj.LambdaT - obj.L4Vec);
-                obj.LambdaRN = [-0.5;-0.5;0;-0.5;-0.5];
+                obj.LambdaRN = [0; 0; 0; -0.5];
                 obj.HistTStrtData = HistTStrtData(:, obj.T / 12);
                 
                 %obj.boundedMat = gpuArray(25.*repmat(obj.Sigma0,661,obj.numScen));
@@ -85,9 +85,9 @@ function yTermLSE = RNEstGPU(obj, lambda)
 %                obj.simRest = zeros(661, 5, 10000);
 %                obj.simHt = zeros(661, 5, 10000);
                 
-                obj.simZt = zeros(663, 5, 10000);
-                obj.simRest = zeros(662, 5, 10000);
-                obj.simHt = zeros(662, 5, 10000);
+                obj.simZt = zeros(663, 4, 10000);
+                obj.simRest = zeros(662, 4, 10000);
+                obj.simHt = zeros(662, 4, 10000);
                 
                 %obj.termStruct = zeros(661, 15, obj.numScen);
                 obj.termStruct = zeros(56, 15, obj.numScen);
@@ -96,31 +96,32 @@ function yTermLSE = RNEstGPU(obj, lambda)
         end
 
     
-        function [mu, Beta, Cmat, A1, B1, LambdaT, Sigma0, lambda0, lambda1] = load(obj, param, lambda)
+        function [mu, Beta, Cmat, A1, B1, LambdaT, Sigma0, lambda0, lambda1] = load(obj, suminfo, lambda)
             % Load parameter vector into corresponding variables
-            Beta = reshape(param(1:25),[5,5]);
-            Cmat = diag(param(26:30));
-            A1 = diag(param(31:35));
-            B1 = diag(param(36:40));
+            Beta = reshape(suminfo.xCenter(1:16),[4,4]);
+            Cmat = diag(suminfo.xCenter(17:20));
+            A1 = diag(suminfo.xCenter(21:24));
+            B1 = diag(suminfo.xCenter(25:28));
             
-            LambdaT = [-0.5; -0.5; 0; param(41)-0.5; -0.5];
+            LambdaT = [0; 0; 0; suminfo.lambda4-0.5];
             
-            mu = (eye(5) - Beta) * obj.revlevel;
+            mu = (eye(4) - Beta) * obj.revlevel;
             
-            Sigma0 = param(26:30)./(ones(5,1)-param(31:35)-param(36:40));
+            Sigma0 = suminfo.xCenter(17:20)./(ones(4,1)-suminfo.xCenter(21:24)-suminfo.xCenter(25:28));
             
-            lambda0 = [lambda(1); lambda(2); 0; mu(4); 0]; % modified
-            lambda1 = [lambda(3:7);lambda(8:12);0 0 0 0 0; Beta(4,:); 0 0 0 0 0]; % modified
+            lambda0 = [lambda(1); lambda(2); 0; mu(4)]; % modified
+            lambda1 = [lambda(3:6);lambda(7:10);0 0 0 0; Beta(4,:)]; % modified
         end
 
-        function obj = update(obj, param, lambda)
+        function obj = update(obj, suminfo, lambda)
             % Update parameters
-            [obj.mu, obj.Beta, obj.Cmat, obj.A1, obj.B1, obj.LambdaT, obj.Sigma0, obj.lambda0, obj.lambda1] = obj.load(param, lambda);
+            [obj.mu, obj.Beta, obj.Cmat, obj.A1, obj.B1, obj.LambdaT, obj.Sigma0, obj.lambda0, obj.lambda1] = obj.load(suminfo, lambda);
         end
         
         function obj = genScenario(obj)
 %            Z0 = obj.HistData.m(301,:)';
-            startz0 = [-8.0293;-6.1287;0.0024; 0.003; -7.0583];
+%            startz0 = [-8.0293;-6.1287;0.0024; 0.003; -7.0583];
+            startz0 = obj.revlevel;
             Z0 = startz0;
             
             obj.simZt(1,:,:) = repmat(Z0, 1, 10000);
@@ -129,16 +130,15 @@ function yTermLSE = RNEstGPU(obj, lambda)
             Z1 = startz0;
             
             rng('default');
-%            inovt = randn(5,10000,660,'single');
-            inovt = randn(5,10000,661,'single');
+%           inovt = randn(5,10000,660,'single');
+            inovt = randn(4,10000,661,'single');
             
 %            LastResT = obj.HistRest(301,:)';
 %            LastSigT = obj.HistHMat(301,:)';
             
-            LastResT = [0;0;0;0;0];
+            LastResT = [0;0;0;0];
             LastSigT = obj.Sigma0;
-            
-                     
+                                 
             SigmaT = diag(obj.Cmat) + diag(obj.A1) .* ...
                      ((LastResT - diag(obj.L4Vec) * LastSigT - (obj.lambda0 + obj.lambda1 * Z0)).^2)...
                      + diag(obj.B1) .* LastSigT; 
@@ -172,23 +172,23 @@ function yTermLSE = RNEstGPU(obj, lambda)
         end        
 
         function yStruct = oneSceBondYield(obj, scen)
-            m_idx = (1:5:3305)';
+            m_idx = (1:4:2644)';
             A = gpuArray(repmat(diag(obj.A1),661,1));
             B = gpuArray(repmat(diag(obj.B1),661,1));
             C = gpuArray(repmat(diag(obj.Cmat),661,1));
             L4V = gpuArray(repmat(obj.L4Vec,661,1));
             LRN = gpuArray(repmat(obj.LambdaRN, 661, 1));
                    
-            Z0 = gpuArray(reshape(squeeze(obj.simZt(1:661,:,scen))', 3305, 1));
-            Z1 = gpuArray(reshape(squeeze(obj.simZt(2:662,:,scen))', 3305, 1));
+            Z0 = gpuArray(reshape(squeeze(obj.simZt(1:661,:,scen))', 2644, 1));
+            Z1 = gpuArray(reshape(squeeze(obj.simZt(2:662,:,scen))', 2644, 1));
           
             L0 = gpuArray(repmat(obj.lambda0, 661, 1));
             L1 = gpuArray(kron(eye(661), obj.lambda1));
             mu_L0 = gpuArray(repmat(obj.mu - obj.lambda0, 661, 1));
             B_L1 = gpuArray(kron(eye(661), obj.Beta - obj.lambda1));
             
-            LastResT = gpuArray(reshape(squeeze(obj.simRest(:,:,scen))', 3305, 1));
-            LastSigT = gpuArray(reshape(squeeze(obj.simHt(:,:,scen))', 3305, 1));
+            LastResT = gpuArray(reshape(squeeze(obj.simRest(:,:,scen))', 2644, 1));
+            LastSigT = gpuArray(reshape(squeeze(obj.simHt(:,:,scen))', 2644, 1));
             
             SigmaT = gpuArray(C + A .* ((LastResT - L4V .* LastSigT - (L0 + L1 * Z0)).^2)...
                      + B .* LastSigT);
@@ -218,7 +218,7 @@ function yTermLSE = RNEstGPU(obj, lambda)
         end
 
         function yStruct = oneSceBondYieldYear(obj, scen)
-            m_idx = (1:5:280)';
+            m_idx = (1:4:224)';
             A = gpuArray(repmat(diag(obj.A1),56,1));
             B = gpuArray(repmat(diag(obj.B1),56,1));
             C = gpuArray(repmat(diag(obj.Cmat),56,1));
@@ -228,8 +228,8 @@ function yTermLSE = RNEstGPU(obj, lambda)
 %            Z0 = gpuArray(reshape(squeeze(obj.simZt(1:12:661,:,scen))', 280, 1));
 %            Z1 = gpuArray(reshape(squeeze(obj.simZt(2:12:662,:,scen))', 280, 1));
             
-            Z0 = gpuArray(reshape(squeeze(obj.simZt(2:12:662,:,scen))', 280, 1));
-            Z1 = gpuArray(reshape(squeeze(obj.simZt(3:12:663,:,scen))', 280, 1));
+            Z0 = gpuArray(reshape(squeeze(obj.simZt(2:12:662,:,scen))', 224, 1));
+            Z1 = gpuArray(reshape(squeeze(obj.simZt(3:12:663,:,scen))', 224, 1));
           
             L0 = gpuArray(repmat(obj.lambda0, 56, 1));
             L1 = gpuArray(kron(eye(56), obj.lambda1));
@@ -239,8 +239,8 @@ function yTermLSE = RNEstGPU(obj, lambda)
 %            LastResT = gpuArray(reshape(squeeze(obj.simRest(1:12:661,:,scen))', 280, 1));
 %            LastSigT = gpuArray(reshape(squeeze(obj.simHt(1:12:661,:,scen))', 280, 1));
             
-            LastResT = gpuArray(reshape(squeeze(obj.simRest(2:12:662,:,scen))', 280, 1));
-            LastSigT = gpuArray(reshape(squeeze(obj.simHt(2:12:662,:,scen))', 280, 1));
+            LastResT = gpuArray(reshape(squeeze(obj.simRest(2:12:662,:,scen))', 224, 1));
+            LastSigT = gpuArray(reshape(squeeze(obj.simHt(2:12:662,:,scen))', 224, 1));
             
             SigmaT = gpuArray(C + A .* ((LastResT - L4V .* LastSigT - (L0 + L1 * Z0)).^2)...
                      + B .* LastSigT);
@@ -248,13 +248,13 @@ function yTermLSE = RNEstGPU(obj, lambda)
             SigmaT = gpuArray(repmat(SigmaT, 1, obj.numScen));
             LastZT = gpuArray(repmat(Z1, 1, obj.numScen));          
             yStruct = gpuArray(zeros(56, size(obj.T, 2)));
-            sumZT = gpuArray(exp(LastZT(m_idx,:)));
+            sumZT = gpuArray(LastZT(m_idx,:));
             idx = 1;
             
             for i=2:180
                 Yt = sqrt(SigmaT) .* obj.inovs.m(:,:,i-1);
                 Zt =  (SigmaT .* LRN + mu_L0) + B_L1 * LastZT + Yt;           
-                sumZT = sumZT + exp(Zt(m_idx,:));
+                sumZT = sumZT + Zt(m_idx,:);
                 if i == obj.T(idx)
                     yStruct(:,idx) = -log(mean(exp(-sumZT),2))/obj.T(idx)*12;
                     idx = idx + 1;

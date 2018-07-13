@@ -1,26 +1,26 @@
 %% Read Data
-paramRN = csvread("InputXcenter25/xCenter25.csv");
-Sigma = csvread("InputXcenter25/Sigma.csv");
-HistData = csvread("InputXcenter25/HistData.csv");
-HistMean = csvread("InputXcenter25/HistMean.csv");
-HistRest = csvread("InputXcenter25/HistRest.csv");
-HistHMat  = csvread("InputXcenter25/HistHMat.csv");
-HistTStrtData = csvread("InputXcenter25/HistTermStrt.csv");
-lambda = csvread("lambdaSrDiv25(3).csv");
+load("..\\Data\\suminfo1");
+load("..\\Data\\x4_better")
+
+Sigma = csvread("..\\Data\\Sigma.csv");
+HistData = csvread("..\\Data\\HistData.csv");
+HistMean  = csvread("..\\Data\\HistMean.csv");
+HistTStrtData = csvread("..\\Data\\HistTermStrt.csv");
 
 % Pass by reference objects
 HistData = RefMat(HistData);
 %inovs = RefMat(randn(5,10000,179,301,'single'));
 %inovs = RefMat(randn(5,10000,661,'single'));
 %clearvars inovs
+
 rng('default');
 %inovs = RefMat(randn(3305,10000,179,'single')); %for GPU only
-inovs = RefMat(randn(280,10000,179,'single'));
+inovs = RefMat(randn(224,10000,179,'single')); %for GPU only
 %inovs = RefMat(randn(3305,10000,179,'single')); %for GPU only
 %inovs = RefMat(randn(5,10,179,301,'single'));
 
 %% Routine for Optimization
-rnScen = SimResultRN(paramRN, HistData, Sigma, HistMean, HistHMat, HistRest, inovs, HistTStrtData, lambda);
+rnScen = SimResultRN(suminfo, HistData, Sigma, HistMean, inovs, HistTStrtData, x4);
 %outMat = rwScen.RNEstGPU(lambda);
 rnScen.genScenario();
 outMat = rnScen.oneSceBondYieldYear(1);
@@ -45,10 +45,10 @@ test2_scen = unique(Z);
 plotX = (1:1:662);
 figure;
 
-for i = 1:5
+for i = 1:4
     var1 = squeeze(rnScen.simZt(:,i,:))';
     prct1 = prctile(var1,[5 25 50 75 95], 1);
-    subplot(3,2,i)
+    subplot(2,2,i)
     plot(plotX, prct1(1,2:663), plotX, prct1(2,2:663), plotX, prct1(3,2:663), plotX, prct1(4,2:663), plotX, prct1(5,2:663));
 end
 

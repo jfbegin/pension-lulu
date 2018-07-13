@@ -45,7 +45,6 @@ function yTermLSE = RNEstGPU(obj, lambda)
         HistTStrtData %Historical Data for bond yield at different maturities
         
         boundedMat
-        boundedMatScen
     end
 
     
@@ -67,7 +66,6 @@ function yTermLSE = RNEstGPU(obj, lambda)
                 obj.HistTStrtData = HistTStrtData(:, obj.T / 12);
                 
                 obj.boundedMat = gpuArray(25.*repmat(obj.Sigma0,301,10000)); %50
-                obj.boundedMatScen = 25.*repmat(obj.Sigma0, 1, 10000);
             end
         end
 
@@ -406,7 +404,7 @@ function yTermLSE = RNEstGPU(obj, lambda)
             
                      
           SigmaT = diag(obj.Cmat) + diag(obj.A1) .* ...
-                   ((LastResT - diag(obj.L4Vec) * LastSigT - (lambda0 + lambda1 * Z0)).^2)...
+                   ((LastResT - diag(obj.L4Vec) * LastSigT - (obj.lambda0 + obj.lambda1 * Z0)).^2)...
                    + diag(obj.B1) .* LastSigT; 
                  
           SigmaT = repmat(SigmaT, 1, 10000);
@@ -435,12 +433,7 @@ function yTermLSE = RNEstGPU(obj, lambda)
                 
               sim_result.Zt(i+1,:,:) = Zt;
           end
-        end
-        
-        function boundedSigmas = boundedSigmaScen(obj, Sigmas)
-                %[~,N] = size(Sigmas);
-             boundedSigmas = max(eps,min(Sigmas, obj.boundedMatScen));
-        end 
+      end
 
         
 %           Correct Index AS IN THESIS?
