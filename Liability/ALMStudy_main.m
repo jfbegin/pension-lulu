@@ -9,8 +9,8 @@ PlanDesign = struct('ValMethod','PUC','ValRateType','BondBased','EquityRP',0.023
                     'FixValRate',0.05,'Lbound',0.01,'Ubound',0.1,'NoActionRange',false,'TriggerLFR',1,'TriggerUFR',1.4,...
                     'AdjLFR',1,'AdjUFR',1.4,'AdjAction','edge');
         
-PlanDesignEAN = struct('ValMethod','PUC','ValRateType','EROA','EquityRP',0.023,'StockWeight',0.5,'BondWeight',0.5,...
-                    'FixValRate',0.05,'Lbound',0.01,'Ubound',0.1,'NoActionRange',true,'TriggerLFR',1,'TriggerUFR',1.4,...
+PlanDesignEAN = struct('ValMethod','PUC','ValRateType','BondBased','EquityRP',0.023,'StockWeight',0.5,'BondWeight',0.5,...
+                    'FixValRate',0.05,'Lbound',0.01,'Ubound',0.1,'NoActionRange',false,'TriggerLFR',1,'TriggerUFR',1.4,...
                     'AdjLFR',1,'AdjUFR',1.4,'AdjAction','edge', 'ActionFP','FP');
                 
 PlanDesignDC = struct('ValRateType','BondBased','EquityRP',0.023,'StockWeight',0.5,'BondWeight',0.5,...
@@ -26,11 +26,11 @@ PlanDesignDC = struct('ValRateType','BondBased','EquityRP',0.023,'StockWeight',0
 % 
 % rn_VBALMStudy = VBALMStudy(rn_ALMStudy,rn_DCStudy);
 
-rw_ALMStudy = ALMStudyEAN(55, 9976, rw_assetScenario, 1, TargetCalAssump, PlanDesignEAN);
-rn_ALMStudy = ALMStudyEAN(55, 9976, rn_assetScenario, 1, TargetCalAssump, PlanDesignEAN);
+rw_ALMStudy = ALMStudyEAN(55, 10000, rw_assetScenario, 1, TargetCalAssump, PlanDesignEAN);
+rn_ALMStudy = ALMStudyEAN(55, 10000, rn_assetScenario, 1, TargetCalAssump, PlanDesignEAN);
 
-rn_DCStudy = DCALMStudy(55,9976,rn_assetScenario,TargetCalAssump,PlanDesignDC);
-rw_DCStudy = DCALMStudy(55,9976,rw_assetScenario,TargetCalAssump,PlanDesignDC);
+rn_DCStudy = DCALMStudy(55,10000,rn_assetScenario,TargetCalAssump,PlanDesignDC);
+rw_DCStudy = DCALMStudy(55,10000,rw_assetScenario,TargetCalAssump,PlanDesignDC);
 
 rn_VBALMStudy = VBALMStudyEAN(rn_ALMStudy,rn_DCStudy);
 
@@ -111,7 +111,7 @@ plot(plotX55, squeeze(TBPAR(:,1)), '-.', plotX55, squeeze(TBPAR(:,3)), '-');
 legend('Path 1', 'Path 2')
 ylabel("Fund Return")
 xlabel("Years")
-ylim([-0.2,0.35]);
+ylim([-0.2,0.5]);
 xlim([0,55]);
 
 set(h,'Units','Inches');
@@ -126,7 +126,7 @@ plot(plotX55, prctAR(1,:), 'k-.', plotX55, prctAR(2,:),'k--', plotX55, prctAR(3,
 legend('5-th Percentile','25-th Percentile','50-th Percentile','75-th Percentile','95-th Percentile')
 ylabel("Fund Return")
 xlabel("Years");
-ylim([-0.2,0.3]);
+ylim([-0.2,0.45]);
 xlim([0,55]);
 
 
@@ -168,7 +168,7 @@ ylabel("Spread")
 xlabel("Years");
 legend('25-th Percentile','50-th Percentile','75-th Percentile')
 xlim([0,55]);
-ylim([-0.085,0.08]);
+ylim([-0.085,0.3]);
 
 set(h,'Units','Inches');
 pos = get(h,'Position');
@@ -215,7 +215,7 @@ ylabel("Replacement Ratio")
 xlabel("Years");
 legend('5-th Percentile','25-th Percentile','50-th Percentile','75-th Percentile','95-th Percentile', 'Initial Target')
 xlim([0,55]);
-ylim([0.05,1]);
+
 
 set(h,'Units','Inches');
 pos = get(h,'Position');
@@ -260,7 +260,7 @@ print(h,'ProbIncDc3','-dpdf','-r0')
 
 %Plot Value of Pension Deal
 h = figure;
-plot(plotGen, TBPGenValue, 'b-', plotGen, BaseResult.VGenAccountBasic - mean(BaseResult.InitialContriPaid, 2), 'k-.', plotGen, ones(111).*0, 'r-');
+plot(plotGen, TBPGenValue, 'b-',  plotGen, ones(111).*0, 'r-');
 xlim([-25 85]);
 ylabel("Value of the Pension Deal")
 xlabel("Cohorts");

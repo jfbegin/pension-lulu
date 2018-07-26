@@ -1,12 +1,12 @@
-load("../AssetScen_Equi/rn_simHt.mat"); %rn_simHt = temp;
-load("../AssetScen_Equi/rn_simRest.mat"); %rn_simRest = temp;
-load("../AssetScen_Equi/rn_simZt.mat"); %rn_simZt = temp;
-load("../AssetScen_Equi/rn_termStruct.mat"); %rn_termStruct = outMat;
+load("../Data/rn_simHt.mat"); %rn_simHt = temp;
+load("../Data/rn_simRest.mat"); %rn_simRest = temp;
+load("../Data/rn_simZt.mat"); %rn_simZt = temp;
+load("../Data/rn_termStruct.mat"); %rn_termStruct = outMat;
 
-load("../AssetScen_Equi/rw_simHt.mat"); %rn_simHt = temp;
-load("../AssetScen_Equi/rw_simRest.mat"); %rn_simRest = temp;
-load("../AssetScen_Equi/rw_simZt.mat"); %rn_simZt = temp;
-load("../AssetScen_Equi/rw_termStruct.mat"); %rn_termStruct = outMat;
+load("../Data/rw_simHt.mat"); %rn_simHt = temp;
+load("../Data/rw_simRest.mat"); %rn_simRest = temp;
+load("../Data/rw_simZt.mat"); %rn_simZt = temp;
+load("../Data/rw_termStruct.mat"); %rn_termStruct = outMat;
 
 
 %Get the 0 and inf scenarios for both risk neutral and real world
@@ -29,7 +29,6 @@ infScen = union([rnInfScen;rwInfScen],[rn0Scen;rw0Scen]);
 %clean out the bad scenarios
 goodScen = setdiff(1:10000, infScen);
 
-param = csvread("Input/xCenter25.csv");
 
 % [X,Y,Z] = ind2sub(size(rw_termStruct), find(isinf(rw_termStruct)));
 % nanScen = unique(Z);
@@ -41,7 +40,6 @@ rw_simRest = rw_simRest(:,:,goodScen);
 rw_simZt = rw_simZt(:,:,goodScen);
 
 rw_Zt = rw_simZt;
-rw_Zt(:,[1 2 5],:) = exp(rw_simZt(:,[1 2 5],:));
 
 rn_termStruct = rn_termStruct(:,:,goodScen);
 rn_simHt = rn_simHt(:,:,goodScen);
@@ -49,7 +47,6 @@ rn_simRest = rn_simRest(:,:,goodScen);
 rn_simZt = rn_simZt(:,:,goodScen);
 
 rn_Zt = rn_simZt;
-rn_Zt(:,[1 2 5],:) = exp(rn_simZt(:,[1 2 5],:));
 
 %%Plot of Projected Scenarios
 plotM = datetime(2016,6,1) + calmonths(0:660);
@@ -57,7 +54,7 @@ h = figure;
 
 plotTitle = ["Short-term Bond Yield", "Long-term Bond Yield", "Inflation Rate", "Excess Stock Return", "Dividend Yield"];
 
-for i = 1:5
+for i = 1:4
     var1 = squeeze(rw_Zt(:,i,:))';
     prct1 = prctile(var1,[5 25 50 75 95], 1);
     subplot(3,2,i)    
@@ -99,7 +96,7 @@ if false
   plotX = (1:1:661);
   figure;
 
-  for i = 1:5
+  for i = 1:4
       var1 = squeeze(rn_Zt(:,i,:))';
       prct1 = prctile(var1,[5 25 50 75 95], 1);
       subplot(3,2,i)

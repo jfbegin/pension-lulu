@@ -8,7 +8,7 @@ classdef DCALMStudy < handle
         z0
         InfAnnual
         SrAnnual
-        DivAnnual
+        %DivAnnual
         BondAnnual
         BondYield15
         BondYield1m
@@ -87,8 +87,9 @@ classdef DCALMStudy < handle
             %continuously compounded, get from the last column of the hist
             %data
 %            obj.z0 = [-7.7464; -6.4462; 0.0023; 0.0382676; -5.9976];  
-            obj.z0 = [-6.34;-5.6802;0.0017; 0.0008; -6.3029];
-            obj.z0([1 2 5]) = exp(obj.z0([1 2 5]));
+%             obj.z0 = [-6.34;-5.6802;0.0017; 0.0008; -6.3029];
+%             obj.z0([1 2 5]) = exp(obj.z0([1 2 5]));
+            obj.z0 = [0.0027; 0.0044; 0.0015; 0.003826];
             obj.PlanDesign = PlanDesign;
 %             obj.InfAnnual = csvread("../../AssetInput/infAnnualEfft.csv");
 %             obj.SrAnnual = csvread("../../AssetInput/srAnnualEfft.csv");
@@ -106,7 +107,7 @@ classdef DCALMStudy < handle
 
             obj.InfAnnual = assetScenario.infAnnualEfft;
             obj.SrAnnual = assetScenario.srAnnualEfft;
-            obj.DivAnnual = assetScenario.divAnnualEfft;
+            %obj.DivAnnual = assetScenario.divAnnualEfft;
             obj.BondAnnual = assetScenario.bondAnnualEfft;
             obj.BondYield15 = assetScenario.bondYield_L_Efft;
             obj.BondYield1m = assetScenario.bondYield_S_Efft;

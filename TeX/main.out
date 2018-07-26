@@ -1,0 +1,45 @@
+\BOOKMARK [0][-]{section*.1}{Approval}{}% 1
+\BOOKMARK [0][-]{section*.3}{Abstract}{}% 2
+\BOOKMARK [0][-]{section*.6}{Dedication}{}% 3
+\BOOKMARK [0][-]{section*.8}{Acknowledgements}{}% 4
+\BOOKMARK [0][-]{section*.9}{Table of Contents}{}% 5
+\BOOKMARK [0][-]{section*.10}{List of Tables}{}% 6
+\BOOKMARK [0][-]{section*.11}{List of Figures}{}% 7
+\BOOKMARK [0][-]{chapter.1}{Introduction}{}% 8
+\BOOKMARK [0][-]{chapter.2}{Economic Scenario Generator}{}% 9
+\BOOKMARK [1][-]{section.2.1}{The Model Building Process}{chapter.2}% 10
+\BOOKMARK [1][-]{section.2.2}{VAR-GARCH Model}{chapter.2}% 11
+\BOOKMARK [1][-]{section.2.3}{Risk-Neutral Model}{chapter.2}% 12
+\BOOKMARK [0][-]{chapter.3}{Estimation Methodology and Results}{}% 13
+\BOOKMARK [1][-]{section.3.1}{Estimation Under the Physical Measure}{chapter.3}% 14
+\BOOKMARK [1][-]{section.3.2}{Calibration Under the Risk-Neutral Measure}{chapter.3}% 15
+\BOOKMARK [1][-]{section.3.3}{Data}{chapter.3}% 16
+\BOOKMARK [1][-]{section.3.4}{Estimation Results}{chapter.3}% 17
+\BOOKMARK [1][-]{section.3.5}{Forecasts}{chapter.3}% 18
+\BOOKMARK [0][-]{chapter.4}{Stylized Target Benefit Plan: Key Features and Assumptions}{}% 19
+\BOOKMARK [1][-]{section.4.1}{Plan Membership Assumptions}{chapter.4}% 20
+\BOOKMARK [1][-]{section.4.2}{Salary Progression}{chapter.4}% 21
+\BOOKMARK [1][-]{section.4.3}{Contribution Rate}{chapter.4}% 22
+\BOOKMARK [1][-]{section.4.4}{Target Benefit}{chapter.4}% 23
+\BOOKMARK [1][-]{section.4.5}{Starting Asset Value}{chapter.4}% 24
+\BOOKMARK [1][-]{section.4.6}{Affordability Test}{chapter.4}% 25
+\BOOKMARK [2][-]{subsection.4.6.1}{Valuation of Plan Assets}{section.4.6}% 26
+\BOOKMARK [2][-]{subsection.4.6.2}{Valuation of Plan Liability}{section.4.6}% 27
+\BOOKMARK [2][-]{subsection.4.6.3}{Funded Ratio}{section.4.6}% 28
+\BOOKMARK [1][-]{section.4.7}{Triggers}{chapter.4}% 29
+\BOOKMARK [1][-]{section.4.8}{Actions}{chapter.4}% 30
+\BOOKMARK [0][-]{chapter.5}{Value-Based ALM Study of a Collective Defined Contribution Plan}{}% 31
+\BOOKMARK [1][-]{section.5.1}{Collective DC Plan Operations}{chapter.5}% 32
+\BOOKMARK [1][-]{section.5.2}{Generational Accounts}{chapter.5}% 33
+\BOOKMARK [1][-]{section.5.3}{Value of the Pension Deal}{chapter.5}% 34
+\BOOKMARK [1][-]{section.5.4}{Decomposition of Risk Sharing into Call and Put Options}{chapter.5}% 35
+\BOOKMARK [2][-]{subsection.5.4.1}{Individual DC Plan Benchmark}{section.5.4}% 36
+\BOOKMARK [2][-]{subsection.5.4.2}{Embedded Options}{section.5.4}% 37
+\BOOKMARK [1][-]{section.5.5}{Key Findings}{chapter.5}% 38
+\BOOKMARK [0][-]{chapter.6}{Inter-generational Impact of Key Design Choices}{}% 39
+\BOOKMARK [1][-]{section.6.1}{TBP Designs with Different Valuation Rate Assumption}{chapter.6}% 40
+\BOOKMARK [1][-]{section.6.2}{TBP Designs with Different Triggers}{chapter.6}% 41
+\BOOKMARK [2][-]{subsection.6.2.1}{Triggers Centred at a Funded Ratio of 100\045}{section.6.2}% 42
+\BOOKMARK [2][-]{subsection.6.2.2}{Triggers Centred at a Funded Ratio around 120\045}{section.6.2}% 43
+\BOOKMARK [0][-]{chapter.7}{Conclusion}{}% 44
+\BOOKMARK [0][-]{section*.44}{Bibliography}{}% 45

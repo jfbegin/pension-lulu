@@ -1,0 +1,46 @@
+\babel@toc {english}{}
+\contentsline {chapter}{Approval}{ii}{section*.1}
+\contentsline {chapter}{Abstract}{iii}{section*.3}
+\contentsline {chapter}{Dedication}{iv}{section*.6}
+\contentsline {chapter}{Acknowledgements}{v}{section*.8}
+\contentsline {chapter}{Table of Contents}{vii}{section*.9}
+\contentsline {chapter}{List of Tables}{ix}{section*.10}
+\contentsline {chapter}{List of Figures}{x}{section*.11}
+\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}
+\contentsline {chapter}{\numberline {2}Economic Scenario Generator}{7}{chapter.2}
+\contentsline {section}{\numberline {2.1}The Model Building Process}{7}{section.2.1}
+\contentsline {section}{\numberline {2.2}VAR-GARCH Model}{10}{section.2.2}
+\contentsline {section}{\numberline {2.3}Risk-Neutral Model}{12}{section.2.3}
+\contentsline {chapter}{\numberline {3}Estimation Methodology and Results}{15}{chapter.3}
+\contentsline {section}{\numberline {3.1}Estimation Under the Physical Measure}{15}{section.3.1}
+\contentsline {section}{\numberline {3.2}Calibration Under the Risk-Neutral Measure}{17}{section.3.2}
+\contentsline {section}{\numberline {3.3}Data}{18}{section.3.3}
+\contentsline {section}{\numberline {3.4}Estimation Results}{19}{section.3.4}
+\contentsline {section}{\numberline {3.5}Forecasts}{22}{section.3.5}
+\contentsline {chapter}{\numberline {4}Stylized Target Benefit Plan: Key Features and Assumptions}{28}{chapter.4}
+\contentsline {section}{\numberline {4.1}Plan Membership Assumptions}{28}{section.4.1}
+\contentsline {section}{\numberline {4.2}Salary Progression}{29}{section.4.2}
+\contentsline {section}{\numberline {4.3}Contribution Rate}{29}{section.4.3}
+\contentsline {section}{\numberline {4.4}Target Benefit}{29}{section.4.4}
+\contentsline {section}{\numberline {4.5}Starting Asset Value}{30}{section.4.5}
+\contentsline {section}{\numberline {4.6}Affordability Test}{32}{section.4.6}
+\contentsline {subsection}{\numberline {4.6.1}Valuation of Plan Assets}{32}{subsection.4.6.1}
+\contentsline {subsection}{\numberline {4.6.2}Valuation of Plan Liability}{34}{subsection.4.6.2}
+\contentsline {subsection}{\numberline {4.6.3}Funded Ratio}{37}{subsection.4.6.3}
+\contentsline {section}{\numberline {4.7}Triggers}{37}{section.4.7}
+\contentsline {section}{\numberline {4.8}Actions}{37}{section.4.8}
+\contentsline {chapter}{\numberline {5}Value-Based ALM Study of a Collective Defined Contribution Plan}{39}{chapter.5}
+\contentsline {section}{\numberline {5.1}Collective DC Plan Operations}{39}{section.5.1}
+\contentsline {section}{\numberline {5.2}Generational Accounts}{44}{section.5.2}
+\contentsline {section}{\numberline {5.3}Value of the Pension Deal}{45}{section.5.3}
+\contentsline {section}{\numberline {5.4}Decomposition of Risk Sharing into Call and Put Options}{47}{section.5.4}
+\contentsline {subsection}{\numberline {5.4.1}Individual DC Plan Benchmark}{48}{subsection.5.4.1}
+\contentsline {subsection}{\numberline {5.4.2}Embedded Options}{50}{subsection.5.4.2}
+\contentsline {section}{\numberline {5.5}Key Findings}{53}{section.5.5}
+\contentsline {chapter}{\numberline {6}Inter-generational Impact of Key Design Choices}{55}{chapter.6}
+\contentsline {section}{\numberline {6.1}TBP Designs with Different Valuation Rate Assumption}{55}{section.6.1}
+\contentsline {section}{\numberline {6.2}TBP Designs with Different Triggers}{60}{section.6.2}
+\contentsline {subsection}{\numberline {6.2.1}Triggers Centred at a Funded Ratio of $100\%$}{60}{subsection.6.2.1}
+\contentsline {subsection}{\numberline {6.2.2}Triggers Centred at a Funded Ratio around $120\%$}{63}{subsection.6.2.2}
+\contentsline {chapter}{\numberline {7}Conclusion}{67}{chapter.7}
+\contentsline {chapter}{Bibliography}{69}{section*.44}

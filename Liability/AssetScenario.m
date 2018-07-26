@@ -8,12 +8,12 @@ classdef AssetScenario < handle
         termStruct
         
         srAnnualConti  %55*10000 matrix
-        divAnnualConti
+        %divAnnualConti
         bondAnnualConti
         infAnnualConti
         
         srAnnualEfft %
-        divAnnualEfft %
+        %divAnnualEfft %
         bondAnnualEfft%
         infAnnualEfft%
         
@@ -35,7 +35,7 @@ classdef AssetScenario < handle
             obj.termStruct = termStruct;
             
             obj.StockReturn();
-            obj.DivYield();
+            %obj.DivYield();
             obj.BondReturn();
             obj.Inflation();
             obj.BondYield();
@@ -52,15 +52,15 @@ classdef AssetScenario < handle
             obj.srAnnualEfft = exp(obj.srAnnualConti) - 1;
         end
         
-        function obj = DivYield(obj)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
-            divMonth = squeeze(obj.Zt(:,5,:));
-%            obj.divAnnualConti = squeeze(sum(reshape(divMonth(3:end,:),12,55,obj.nScen)));
-            obj.divAnnualConti = squeeze(sum(reshape(divMonth(3:662,:),12,55,obj.nScen)));
-            
-            obj.divAnnualEfft = exp(obj.divAnnualConti) - 1;
-        end
+%         function obj = DivYield(obj)
+%             %METHOD1 Summary of this method goes here
+%             %   Detailed explanation goes here
+%             divMonth = squeeze(obj.Zt(:,5,:));
+% %            obj.divAnnualConti = squeeze(sum(reshape(divMonth(3:end,:),12,55,obj.nScen)));
+%             obj.divAnnualConti = squeeze(sum(reshape(divMonth(3:662,:),12,55,obj.nScen)));
+%             
+%             obj.divAnnualEfft = exp(obj.divAnnualConti) - 1;
+%         end
         
         function obj = BondReturn(obj)
             %METHOD1 Summary of this method goes here
